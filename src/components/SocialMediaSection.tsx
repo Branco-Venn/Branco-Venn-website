@@ -50,11 +50,32 @@ const socials = [
       </svg>
     ),
   },
+  {
+    name: "TikTok",
+    handle: "@brancovenn",
+    href: "https://tiktok.com/@brancovenn",
+    bgColor: "bg-gradient-to-b from-[#010101] to-[#161823]",
+    bgImage: undefined,
+    icon: (
+      <div className="relative h-10 w-10 md:h-12 md:w-12">
+        <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full translate-x-[2px] translate-y-[1px]" fill="#FE2C55">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.39-2.95 5.6-1.8 1.25-4.14 1.55-6.17.83-2.06-.69-3.71-2.42-4.15-4.57-.45-2.09-.07-4.32 1.18-6.13 1.25-1.84 3.42-2.92 5.63-3.13v4.05c-1.43.08-2.73 1.05-3.19 2.44-.47 1.4.05 3.02 1.23 3.84 1.16.85 2.82.9 4.04.14 1.22-.72 1.94-2.04 1.98-3.46.03-3.85.01-7.7.01-11.55-.01-1.61.02-3.21-.01-4.82z" />
+        </svg>
+        <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full -translate-x-[2px] -translate-y-[1px]" fill="#25F4EE">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.39-2.95 5.6-1.8 1.25-4.14 1.55-6.17.83-2.06-.69-3.71-2.42-4.15-4.57-.45-2.09-.07-4.32 1.18-6.13 1.25-1.84 3.42-2.92 5.63-3.13v4.05c-1.43.08-2.73 1.05-3.19 2.44-.47 1.4.05 3.02 1.23 3.84 1.16.85 2.82.9 4.04.14 1.22-.72 1.94-2.04 1.98-3.46.03-3.85.01-7.7.01-11.55-.01-1.61.02-3.21-.01-4.82z" />
+        </svg>
+        <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full" fill="white">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.39-2.95 5.6-1.8 1.25-4.14 1.55-6.17.83-2.06-.69-3.71-2.42-4.15-4.57-.45-2.09-.07-4.32 1.18-6.13 1.25-1.84 3.42-2.92 5.63-3.13v4.05c-1.43.08-2.73 1.05-3.19 2.44-.47 1.4.05 3.02 1.23 3.84 1.16.85 2.82.9 4.04.14 1.22-.72 1.94-2.04 1.98-3.46.03-3.85.01-7.7.01-11.55-.01-1.61.02-3.21-.01-4.82z" />
+        </svg>
+      </div>
+    ),
+  },
 ];
 
-const rotations = [-6, -2, 2, 6];
-const xOffsets = [-2, -1, 1, 2];
-const mobileXOffsets = [-2, -1, 1, 2];
+const rotations = [-8, -4, 0, 4, 8];
+// Halved the offsets so they stack closer together
+const xOffsets = [-10, -5, 0, 5, 10];
+const mobileXOffsets = [-8, -4, 0, 4, 8];
 
 const SocialMediaSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -102,8 +123,8 @@ const SocialMediaSection = () => {
                 scale: hoveredIndex === i ? 1.15 : 1,
                 x: hoveredIndex !== null && hoveredIndex !== i
                   ? (typeof window !== "undefined" && window.innerWidth > 768
-                    ? (i < hoveredIndex ? xOffsets[i] - 15 : xOffsets[i] + 15)
-                    : (i < hoveredIndex ? mobileXOffsets[i] - 10 : mobileXOffsets[i] + 10))
+                    ? (i < hoveredIndex ? xOffsets[i] - 25 : xOffsets[i] + 25)
+                    : (i < hoveredIndex ? mobileXOffsets[i] - 15 : mobileXOffsets[i] + 15))
                   : (typeof window !== "undefined" && window.innerWidth > 768 ? xOffsets[i] : mobileXOffsets[i]),
               }}
               transition={{
@@ -117,8 +138,8 @@ const SocialMediaSection = () => {
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 } : {}),
-                zIndex: hoveredIndex === i ? 50 : (i === 1 || i === 2 ? 4 : (socials.length - i)),
-                boxShadow: hoveredIndex === i ? "0 25px 60px -15px rgba(0,0,0,0.3)" : "0 10px 30px -10px rgba(0,0,0,0.2)",
+                zIndex: hoveredIndex === i ? 50 : (i === 2 ? 5 : (socials.length - Math.abs(2 - i))),
+                boxShadow: hoveredIndex === i ? "0 25px 60px -15px rgba(0,0,0,0.5)" : "-10px 0px 20px -5px rgba(0,0,0,0.4)",
               }}
               onHoverStart={() => setHoveredIndex(i)}
               onHoverEnd={() => setHoveredIndex(null)}
