@@ -24,22 +24,68 @@ const PlexusBackground = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ── Fast Path: Web Worker + OffscreenCanvas (Background Thread) ──
+        // Pushes the heavy O(n²) calculation off the main thread.
+        const supportsOffscreen = typeof canvas.transferControlToOffscreen === 'function';
+
+        if (supportsOffscreen) {
+            const offscreen = canvas.transferControlToOffscreen();
+            const worker = new Worker(
+                new URL('../workers/plexusWorker.ts', import.meta.url),
+                { type: 'module' }
+            );
+
+            worker.postMessage(
+                { type: 'init', canvas: offscreen, width, height },
+                [offscreen]
+            );
+
+            const handleVisibility = () => {
+                worker.postMessage({ type: document.hidden ? 'pause' : 'resume' });
+            };
+
+            const handleResize = () => {
+                worker.postMessage({
+                    type: 'resize',
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                });
+            };
+
+            document.addEventListener('visibilitychange', handleVisibility);
+            window.addEventListener('resize', handleResize);
+
+            return () => {
+                document.removeEventListener('visibilitychange', handleVisibility);
+                window.removeEventListener('resize', handleResize);
+                worker.postMessage({ type: 'destroy' });
+                worker.terminate();
+            };
+        }
+
+        // ── Fallback Path: Main Thread ──
+        const ctx = canvas.getContext('2d', { alpha: true });
         if (!ctx) return;
 
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+        let w = width;
+        let h = height;
+        canvas.width = w;
+        canvas.height = h;
 
         const particles: Particle[] = [];
-        // Density based on screen size
-        const particleCount = Math.floor((width * height) / 18000) + 40;
+        // Original density and count is retained here
+        const particleCount = Math.floor((w * h) / 18000) + 40;
+        const connectionDistance = 150;
+        const connectionDistSq = connectionDistance * connectionDistance;
 
         for (let i = 0; i < particleCount; i++) {
             particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
+                x: Math.random() * w,
+                y: Math.random() * h,
                 vx: (Math.random() - 0.5) * 0.4,
                 vy: (Math.random() - 0.5) * 0.4,
                 size: 1.5 + Math.random() * 2,
@@ -47,78 +93,92 @@ const PlexusBackground = () => {
             });
         }
 
+        let animationFrameId: number;
+        let paused = false;
+
+        const handleVisibility = () => {
+            paused = document.hidden;
+            if (!paused) {
+                animationFrameId = requestAnimationFrame(render);
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
         const render = () => {
-            ctx.clearRect(0, 0, width, height);
-            
-            // Draw lines first so they are under points
+            if (paused) return;
+
+            ctx.clearRect(0, 0, w, h);
+
             for (let i = 0; i < particleCount; i++) {
                 const p = particles[i];
-                
-                // Update position
                 p.x += p.vx;
                 p.y += p.vy;
 
-                // Bounce off edges
-                if (p.x < 0 || p.x > width) p.vx *= -1;
-                if (p.y < 0 || p.y > height) p.vy *= -1;
+                if (p.x < 0 || p.x > w) p.vx *= -1;
+                if (p.y < 0 || p.y > h) p.vy *= -1;
+            }
 
-                // Check distances to other particles
+            // Draw line connections 
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < particleCount; i++) {
+                const p = particles[i];
                 for (let j = i + 1; j < particleCount; j++) {
                     const p2 = particles[j];
                     const dx = p.x - p2.x;
                     const dy = p.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const distSq = dx * dx + dy * dy;
 
-                    if (dist < 150) {
-                        ctx.beginPath();
-                        // Opacity fades out as distance increases
-                        const opacity = (1 - dist / 150) * 0.3;
+                    // Faster distance check using squared distance
+                    if (distSq < connectionDistSq) {
+                        const dist = Math.sqrt(distSq);
+                        const opacity = (1 - dist / connectionDistance) * 0.3;
                         ctx.strokeStyle = p.color;
                         ctx.globalAlpha = opacity;
-                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
-                        ctx.globalAlpha = 1.0;
                     }
                 }
             }
 
-            // Draw points
+            // Draw particle points
+            ctx.globalAlpha = 0.6;
             for (let i = 0; i < particleCount; i++) {
                 const p = particles[i];
-                ctx.beginPath();
                 ctx.fillStyle = p.color;
-                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.globalAlpha = 1.0;
             }
+            ctx.globalAlpha = 1.0;
 
-            requestAnimationFrame(render);
+            animationFrameId = requestAnimationFrame(render);
         };
 
+        animationFrameId = requestAnimationFrame(render);
+
         const handleResize = () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
         };
 
         window.addEventListener('resize', handleResize);
-        const animId = requestAnimationFrame(render);
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            cancelAnimationFrame(animId);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            cancelAnimationFrame(animationFrameId);
         };
     }, []);
 
     return (
-        <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 pointer-events-none z-[0] opacity-50" 
-            style={{ mixBlendMode: 'screen' }}
+        <canvas
+            ref={canvasRef}
+            className="absolute inset-0 pointer-events-none z-[0] opacity-50"
+            style={{ mixBlendMode: 'screen', willChange: 'contents' }}
         />
     );
 };
