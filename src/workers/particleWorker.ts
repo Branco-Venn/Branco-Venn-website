@@ -1,0 +1,226 @@
+// Web Worker: Handles ALL particle physics and rendering off the main thread.
+// The main thread only sends mouse position and resize events — zero CPU used there.
+
+const COLORS = [
+    '#3B82F6', '#6366F1', '#8B5CF6', '#F97316', '#EF4444', '#F59E0B',
+];
+
+interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    baseAngle: number;
+    driftSpeed: number;
+    color: string;
+    size: number;
+    baseOpacity: number;
+    phase: number;
+}
+
+let ctx: OffscreenCanvasRenderingContext2D | null = null;
+let width = 0;
+let height = 0;
+let particles: Particle[] = [];
+let particleCount = 0;
+let mouseX = -1000;
+let mouseY = -1000;
+let prevMouseX = -1000;
+let prevMouseY = -1000;
+let time = 0;
+let lastTime: number | null = null;
+let animationFrameId: number;
+let paused = false;
+
+function initParticles() {
+    particles = [];
+    particleCount = Math.floor((width * height) / 4000);
+
+    for (let i = 0; i < particleCount; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+
+        // Base flow direction (gentle diagonal)
+        const dx = x - (-width * 0.2);
+        const dy = y - (height * 1.2);
+        const baseAngle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.5;
+
+        particles.push({
+            x,
+            y,
+            vx: 0,
+            vy: 0,
+            baseAngle,
+            driftSpeed: 0.8 + Math.random() * 1.0, // Increased base speed
+            color: COLORS[Math.floor(Math.random() * COLORS.length)],
+            size: 1 + Math.random() * 2.5,
+            baseOpacity: 0.15 + Math.random() * 0.6,
+            phase: Math.random() * Math.PI * 2,
+        });
+    }
+}
+
+function render(timestamp: number) {
+    if (paused || !ctx) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+    }
+
+    if (!lastTime) lastTime = timestamp;
+    let dt = timestamp - lastTime;
+    // Prevent massive jumps if tab was hidden (limit max equivalent dropped frames)
+    if (dt > 200) dt = 6.944;
+    const dtMod = dt / 6.944; // Multiplier: 1.0 at 144Hz, ~2.4 at 60Hz
+    lastTime = timestamp;
+
+    // Keep a tiny bit of trailing for extra fluid smoothness, mostly clear
+    ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Solid clear to prevent smearing too much
+    ctx.clearRect(0, 0, width, height);
+
+    time += 0.05 * dtMod;
+
+    // Calculate exact mouse velocity (wake speed)
+    const mouseVx = (mouseX - prevMouseX) / dtMod;
+    const mouseVy = (mouseY - prevMouseY) / dtMod;
+    const mouseSpeed = Math.sqrt(mouseVx * mouseVx + mouseVy * mouseVy);
+
+    // Constantly decay prevMouse to mouse so velocity hits 0 when stopped
+    const decay = Math.min(1, 0.3 * dtMod);
+    prevMouseX += (mouseX - prevMouseX) * decay;
+    prevMouseY += (mouseY - prevMouseY) * decay;
+
+    for (let i = 0; i < particleCount; i++) {
+        const p = particles[i];
+
+        // Determine base gentle drifting direction
+        const currentAngle = p.baseAngle + Math.sin(time * 0.5 + p.phase) * 0.3;
+
+        // Slowly pull velocity back to the base drift
+        const targetVx = Math.cos(currentAngle) * p.driftSpeed;
+        const targetVy = Math.sin(currentAngle) * p.driftSpeed;
+
+        // Add soft fluid friction to return to normal
+        const friction = Math.min(1, 0.04 * dtMod);
+        p.vx += (targetVx - p.vx) * friction;
+        p.vy += (targetVy - p.vy) * friction;
+
+        // Mouse interaction - Fluid Wave / Wake
+        if (mouseX > 0) {
+            const dx = p.x - mouseX;
+            const dy = p.y - mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const interactionRadius = 250;
+
+            if (dist < interactionRadius) {
+                // The closer, the stronger the force
+                const force = Math.pow((interactionRadius - dist) / interactionRadius, 1.5);
+
+                // 1. Radial push (gently push away from cursor like a bubble)
+                const repelPower = 1.5;
+                p.vx += (dx / dist) * force * repelPower * dtMod;
+                p.vy += (dy / dist) * force * repelPower * dtMod;
+
+                // 2. Wake drag (pull particles along with the swiping motion)
+                if (mouseSpeed > 0) {
+                    const clampSpeed = Math.min(mouseSpeed, 50); // prevent crazy jumps
+                    p.vx += (mouseVx / clampSpeed) * force * 1.0 * dtMod;
+                    p.vy += (mouseVy / clampSpeed) * force * 1.0 * dtMod;
+                }
+            }
+        }
+
+        // Apply velocity to position
+        p.x += p.vx * dtMod;
+        p.y += p.vy * dtMod;
+
+        // Screen wrapping
+        if (p.x < -50) p.x = width + 50;
+        else if (p.x > width + 50) p.x = -50;
+        if (p.y < -50) p.y = height + 50;
+        else if (p.y > height + 50) p.y = -50;
+
+        // Render particle as a streak reflecting its true velocity
+        // This creates natural looking "dashes" that stretch when excited and shrink when calm
+        ctx.beginPath();
+
+        // Minimum trail size so they are visible even when resting
+        let lookBackX = p.vx * 3.5;
+        let lookBackY = p.vy * 3.5;
+        const currentSpd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+
+        if (currentSpd < 0.5) {
+            lookBackX = Math.cos(currentAngle) * 2;
+            lookBackY = Math.sin(currentAngle) * 2;
+        }
+
+        ctx.moveTo(p.x - lookBackX, p.y - lookBackY);
+        ctx.lineTo(p.x, p.y);
+
+        ctx.strokeStyle = p.color;
+
+        // Briefly glow brighter when moving very fast in the wave
+        const intensity = Math.min(1, currentSpd / 5);
+        ctx.globalAlpha = p.baseOpacity + intensity * 0.4;
+
+        ctx.lineWidth = p.size;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+    }
+
+    animationFrameId = requestAnimationFrame(render);
+}
+
+// Listen for messages from the main thread
+self.onmessage = (e: MessageEvent) => {
+    const { type } = e.data;
+
+    switch (type) {
+        case 'init': {
+            const offscreen: OffscreenCanvas = e.data.canvas;
+            width = e.data.width;
+            height = e.data.height;
+            offscreen.width = width;
+            offscreen.height = height;
+            ctx = offscreen.getContext('2d');
+            initParticles();
+            animationFrameId = requestAnimationFrame(render);
+            break;
+        }
+        case 'resize':
+            width = e.data.width;
+            height = e.data.height;
+            if (ctx) {
+                (ctx.canvas as OffscreenCanvas).width = width;
+                (ctx.canvas as OffscreenCanvas).height = height;
+            }
+            break;
+        case 'mousemove':
+            if (prevMouseX === -1000) {
+                prevMouseX = e.data.x;
+                prevMouseY = e.data.y;
+            } else {
+                prevMouseX = mouseX;
+                prevMouseY = mouseY;
+            }
+            mouseX = e.data.x;
+            mouseY = e.data.y;
+            break;
+        case 'mouseleave':
+            mouseX = -1000;
+            mouseY = -1000;
+            prevMouseX = -1000;
+            prevMouseY = -1000;
+            break;
+        case 'pause':
+            paused = true;
+            lastTime = null;
+            break;
+        case 'resume':
+            paused = false;
+            lastTime = null;
+            break;
+        case 'destroy':
+            cancelAnimationFrame(animationFrameId);
+            break;
+    }
+};
