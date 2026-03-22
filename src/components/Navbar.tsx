@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
+import LanguageSelector from "./LanguageSelector";
 import iconImage from "@/assets/icon.png";
 
 const navLinks = [
@@ -93,7 +94,8 @@ const Navbar = () => {
 
           {/* Desktop: Theme Toggle and Mobile Menu Toggle */}
           <div className="flex items-center gap-4">
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-6 mr-2">
+              <LanguageSelector />
               <ThemeToggle />
             </div>
             <button
@@ -227,8 +229,11 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: navLinks.length * 0.1 + 0.1 }}
-                className="mt-4"
+                className="mt-4 flex flex-row items-center gap-6"
               >
+                <div className="flex items-center justify-center p-2 rounded-full bg-foreground/5 outline-none">
+                   <LanguageSelector />
+                </div>
                 <ThemeToggle />
               </motion.div>
             </div>
