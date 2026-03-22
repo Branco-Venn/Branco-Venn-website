@@ -230,8 +230,8 @@ const DownloadSection = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
         >
-          <h2 className="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Download for Desktop
+          <h2 className="mb-4 text-4xl md:text-5xl lg:text-[4rem] font-extrabold tracking-tighter bg-gradient-to-br from-foreground to-foreground/50 bg-clip-text text-transparent pb-2">
+            Download Desktop
           </h2>
           <p className="text-lg text-muted-foreground font-light">
             Available for all major platforms
@@ -253,12 +253,14 @@ const DownloadSection = () => {
                 key={platform.name}
                 href={platform.href}
                 download={platform.download ? true : undefined}
-                className="group relative flex flex-col items-center gap-6 rounded-2xl border border-border bg-card p-10 transition-colors hover:border-muted-foreground/30"
+                className="group relative flex flex-col items-center gap-6 rounded-3xl border border-foreground/10 bg-foreground/5 backdrop-blur-lg p-10 transition-all duration-500 hover:bg-foreground/10 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] hover:border-foreground/20 overflow-hidden"
                 variants={cardVariants}
-                whileHover={{ y: -4 }}
               >
+                {/* Subtle internal gradient glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-b from-foreground/0 to-foreground/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+                
                 <Logo
-                  className="h-12 w-12 text-muted-foreground transition-all duration-300 group-hover:text-foreground group-hover:drop-shadow-[0_0_8px_currentColor]"
+                  className="relative z-10 h-14 w-14 text-muted-foreground transition-all duration-500 group-hover:text-foreground group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] dark:group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                 />
                 <div className="text-center">
                   <h3 className="text-xl font-semibold mb-1">
@@ -268,8 +270,8 @@ const DownloadSection = () => {
                     {platform.ext}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-secondary px-5 py-2.5 text-sm font-medium transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Download size={16} />
+                <div className="relative z-10 flex items-center gap-2 rounded-full bg-foreground/10 backdrop-blur-sm border border-foreground/5 px-6 py-3 text-sm font-medium transition-all group-hover:bg-foreground group-hover:text-background shadow-sm">
+                  <Download size={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                   Download
                 </div>
               </motion.a>
