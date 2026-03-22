@@ -1,17 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 
 const COLORS = [
-    '#3B82F6', // Blue
-    '#6366F1', // Indigo
-    '#8B5CF6', // Violet
-    '#F97316', // Orange
-    '#EF4444', // Red
-    '#F59E0B', // Amber
+    'rgba(255, 255, 255, 0.8)',
+    'rgba(255, 255, 255, 0.5)',
+    'rgba(200, 200, 200, 0.4)'
 ];
 
 interface Particle {
     x: number;
     y: number;
+    z: number;
     vx: number;
     vy: number;
     size: number;
@@ -28,8 +26,6 @@ const PlexusBackground = () => {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        // ── Fast Path: Web Worker + OffscreenCanvas (Background Thread) ──
-        // Pushes the heavy O(n²) calculation off the main thread.
         const supportsOffscreen = typeof canvas.transferControlToOffscreen === 'function';
 
         if (supportsOffscreen) {
@@ -44,6 +40,13 @@ const PlexusBackground = () => {
                 [offscreen]
             );
 
+            const handleMouseMove = (e: MouseEvent) => {
+                worker.postMessage({ type: 'mousemove', x: e.clientX, y: e.clientY });
+            };
+            const handleMouseLeave = () => {
+                worker.postMessage({ type: 'mouseleave' });
+            };
+
             const handleVisibility = () => {
                 worker.postMessage({ type: document.hidden ? 'pause' : 'resume' });
             };
@@ -56,10 +59,14 @@ const PlexusBackground = () => {
                 });
             };
 
+            window.addEventListener('mousemove', handleMouseMove, { passive: true });
+            document.body.addEventListener('mouseleave', handleMouseLeave);
             document.addEventListener('visibilitychange', handleVisibility);
             window.addEventListener('resize', handleResize);
 
             return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                document.body.removeEventListener('mouseleave', handleMouseLeave);
                 document.removeEventListener('visibilitychange', handleVisibility);
                 window.removeEventListener('resize', handleResize);
                 worker.postMessage({ type: 'destroy' });
@@ -77,18 +84,32 @@ const PlexusBackground = () => {
         canvas.height = h;
 
         const particles: Particle[] = [];
-        // Original density and count is retained here
-        const particleCount = Math.floor((w * h) / 18000) + 40;
-        const connectionDistance = 150;
-        const connectionDistSq = connectionDistance * connectionDistance;
+        const particleCount = Math.floor((w * h) / 30000) + 15;
+        const connectionDistSq = 250 * 250;
+
+        let mouseX = -1000;
+        let mouseY = -1000;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        };
+        const handleMouseLeave = () => {
+            mouseX = -1000;
+            mouseY = -1000;
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        document.body.addEventListener('mouseleave', handleMouseLeave);
 
         for (let i = 0; i < particleCount; i++) {
             particles.push({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                size: 1.5 + Math.random() * 2,
+                z: Math.random() * 2,
+                vx: (Math.random() - 0.5) * 0.15,
+                vy: (Math.random() - 0.5) * 0.15,
+                size: Math.random() < 0.2 ? 2.5 : 1 + Math.random() * 1.0,
                 color: COLORS[Math.floor(Math.random() * COLORS.length)],
             });
         }
@@ -108,7 +129,9 @@ const PlexusBackground = () => {
             if (paused) return;
 
             ctx.clearRect(0, 0, w, h);
+            ctx.lineWidth = 0.5;
 
+            // Update & Draw Lines & Interactivity
             for (let i = 0; i < particleCount; i++) {
                 const p = particles[i];
                 p.x += p.vx;
@@ -116,42 +139,68 @@ const PlexusBackground = () => {
 
                 if (p.x < 0 || p.x > w) p.vx *= -1;
                 if (p.y < 0 || p.y > h) p.vy *= -1;
-            }
 
-            // Draw line connections 
-            ctx.lineWidth = 0.8;
-            for (let i = 0; i < particleCount; i++) {
-                const p = particles[i];
+                if (mouseX > 0) {
+                    const dx = p.x - mouseX;
+                    const dy = p.y - mouseY;
+                    if (dx*dx + dy*dy < 40000) {
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        p.x -= (dx/dist) * 0.2;
+                        p.y -= (dy/dist) * 0.2;
+                    }
+                }
+
                 for (let j = i + 1; j < particleCount; j++) {
                     const p2 = particles[j];
                     const dx = p.x - p2.x;
                     const dy = p.y - p2.y;
                     const distSq = dx * dx + dy * dy;
 
-                    // Faster distance check using squared distance
                     if (distSq < connectionDistSq) {
                         const dist = Math.sqrt(distSq);
-                        const opacity = (1 - dist / connectionDistance) * 0.3;
-                        ctx.strokeStyle = p.color;
-                        ctx.globalAlpha = opacity;
+                        const opacity = (1 - dist / 250) * 0.25;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
                     }
                 }
+                
+                if (mouseX > 0) {
+                    const mx = mouseX - p.x;
+                    const my = mouseY - p.y;
+                    const mDistSq = mx*mx + my*my;
+                    if (mDistSq < 40000) {
+                        const mDist = Math.sqrt(mDistSq);
+                        const opacity = (1 - mDist / 200) * 0.3;
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(mouseX, mouseY);
+                        ctx.stroke();
+                    }
+                }
             }
 
             // Draw particle points
-            ctx.globalAlpha = 0.6;
             for (let i = 0; i < particleCount; i++) {
                 const p = particles[i];
-                ctx.fillStyle = p.color;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                const renderSize = p.size * (1 + p.z * 0.2);
+                ctx.arc(p.x, p.y, renderSize, 0, Math.PI * 2);
+                
+                if (p.size > 2) {
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = 'rgba(255,255,255,0.5)';
+                } else {
+                    ctx.shadowBlur = 0;
+                }
                 ctx.fill();
             }
-            ctx.globalAlpha = 1.0;
+            
+            ctx.shadowBlur = 0;
 
             animationFrameId = requestAnimationFrame(render);
         };
@@ -168,6 +217,8 @@ const PlexusBackground = () => {
         window.addEventListener('resize', handleResize);
 
         return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            document.body.removeEventListener('mouseleave', handleMouseLeave);
             window.removeEventListener('resize', handleResize);
             document.removeEventListener('visibilitychange', handleVisibility);
             cancelAnimationFrame(animationFrameId);
@@ -177,7 +228,7 @@ const PlexusBackground = () => {
     return (
         <canvas
             ref={canvasRef}
-            className="absolute inset-0 pointer-events-none z-[0] opacity-50"
+            className="absolute inset-0 pointer-events-none z-10" // Brought up in z-index & full opacity to feel interactive
             style={{ mixBlendMode: 'screen', willChange: 'contents' }}
         />
     );

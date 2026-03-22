@@ -54,8 +54,8 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
         <PageTransition>
             <div ref={containerRef} className="min-h-screen bg-background selection:bg-primary/30 scroll-smooth">
                 
-                {/* Global Background Plexus Animation */}
-                <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
+                {/* Interactive Foreground Plexus Animation */}
+                <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
                     <PlexusBackground />
                 </div>
 
