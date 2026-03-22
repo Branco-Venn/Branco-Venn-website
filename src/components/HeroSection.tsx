@@ -50,7 +50,7 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
           {/* Title - Removed max-w-2xl constraint to prevent bg-clip-text clipping on large font sizes */}
           <div className="mb-6 flex flex-col w-full">
             <motion.h1
-              className="text-[5.5rem] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-2"
+              className="text-[16vw] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-2 pr-2 md:pr-4 w-max max-w-none"
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{
@@ -62,7 +62,7 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
               SIM
             </motion.h1>
             <motion.h1
-              className="text-[5.5rem] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-4"
+              className="text-[15vw] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-4 pr-2 md:pr-4 w-max max-w-none"
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{

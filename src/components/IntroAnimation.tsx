@@ -97,7 +97,7 @@ const IntroAnimation = ({ onComplete }: IntroAnimationProps) => {
                 <img
                   src="/BV.svg"
                   alt="Branco Venn"
-                  className="h-16 sm:h-28 md:h-36 lg:h-40 xl:h-44 w-auto object-contain dark:invert"
+                  className="h-10 sm:h-28 md:h-36 lg:h-40 xl:h-44 w-auto object-contain dark:invert"
                 />
               </motion.div>
 
