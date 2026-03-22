@@ -49,7 +49,7 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
             <div className="min-h-screen bg-background pt-24 pb-16">
 
                 {/* Dynamic Header Section */}
-                <section className="relative overflow-hidden w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-24 flex flex-col-reverse md:flex-row items-center gap-12">
+                <section className="relative w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-24 flex flex-col-reverse md:flex-row items-center gap-12">
 
                     <div className="flex-1 z-10">
                         <motion.div
