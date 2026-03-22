@@ -82,7 +82,7 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
                                     className="text-[14vw] sm:text-7xl md:text-8xl lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter leading-[0.9] bg-gradient-to-br from-foreground to-foreground/40 bg-clip-text text-transparent pb-4 pr-10"
                                 >
                                     SIM <br className="hidden sm:block" />
-                                    GAMEPAD.
+                                    GAMEPAD
                                 </motion.h1>
                                 <motion.p
                                     initial={{ opacity: 0, y: 20 }}
