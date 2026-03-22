@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Download, Smartphone } from "lucide-react";
 import { useRef } from "react";
-import heroImage from "@/assets/hero-gamepad.png";
+import heroImageLogo from "@/assets/SimGamepadLogo.png";
 import ParticleBackground from "./ParticleBackground";
 
 interface HeroSectionProps {
@@ -22,12 +22,15 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Background product image */}
-      <div className="absolute inset-0">
-        <img
-          src={heroImage}
-          alt="SIM Gamepad — phone as controller"
-          className="h-full w-full object-cover object-center"
+      {/* Background product image logo */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+        <motion.img
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.4, scale: 1 }}
+          transition={{ duration: 1.5, delay: delay }}
+          src={heroImageLogo}
+          alt="SIM Gamepad Logo"
+          className="h-[60%] w-auto object-contain grayscale brightness-150"
           loading="eager"
         />
       </div>
@@ -121,3 +124,4 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
 };
 
 export default HeroSection;
+
