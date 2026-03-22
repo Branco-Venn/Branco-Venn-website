@@ -7,8 +7,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import heroImage from "@/assets/hero-gamepad.png";
+import heroImageLogo from "@/assets/SimGamepadLogo.png";
 import PageTransition from "@/components/PageTransition";
+import PlexusBackground from "@/components/PlexusBackground";
 
 const features = [
     {
@@ -53,10 +54,9 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
         <PageTransition>
             <div ref={containerRef} className="min-h-screen bg-background selection:bg-primary/30 scroll-smooth">
                 
-                {/* Global Background Elements */}
-                <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] opacity-50" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] opacity-30" />
+                {/* Global Background Plexus Animation */}
+                <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
+                    <PlexusBackground />
                 </div>
 
                 <div className="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden">
@@ -161,8 +161,8 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
                         >
                             <div className="absolute inset-[-20%] bg-gradient-to-tr from-primary/30 via-blue-500/10 to-transparent blur-[100px] rounded-full opacity-60 animate-pulse" />
                             <motion.img
-                                src={heroImage}
-                                alt="Sim Gamepad UI"
+                                src={heroImageLogo}
+                                alt="Sim Gamepad Logo"
                                 style={{ y: backdropY }}
                                 className="relative z-10 w-full max-w-[500px] h-auto object-contain drop-shadow-[0_45px_65px_rgba(0,0,0,0.6)] animate-float-slow"
                             />
