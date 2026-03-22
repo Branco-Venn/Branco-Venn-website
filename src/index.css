@@ -135,3 +135,16 @@
   background: hsl(var(--primary) / 0.2);
   color: hsl(var(--primary-foreground));
 }
+
+/* Hide Google Translate Default UI Elements */
+.skiptranslate, #google_translate_element {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-te-banner-frame {
+  display: none !important;
+}
