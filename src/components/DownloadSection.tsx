@@ -179,9 +179,9 @@ const platforms = [
   {
     name: "Windows",
     logo: WindowsLogo,
-    file: "SimGamepad.exe",
+    file: "SimGamepad_Installer.zip",
     ext: ".exe",
-    href: "/downloads/SimGamepad.exe",
+    href: "/downloads/SimGamepad_Installer.zip",
     download: true,
   },
   {
