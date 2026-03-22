@@ -90,7 +90,7 @@ const SocialMediaSection = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
         >
-          <h2 className="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+          <h2 className="mb-4 text-4xl md:text-5xl lg:text-[4rem] font-extrabold tracking-tighter bg-gradient-to-br from-foreground to-foreground/50 bg-clip-text text-transparent pb-2">
             Follow Us
           </h2>
           <p className="text-lg text-muted-foreground font-light">
@@ -106,7 +106,7 @@ const SocialMediaSection = () => {
               href={social.href}
               target="_blank"
               rel="noopener noreferrer"
-              className={`absolute w-44 h-56 md:w-56 md:h-72 rounded-2xl ${social.bgColor} p-6 md:p-8 cursor-pointer flex flex-col items-center justify-center gap-4 md:gap-6 overflow-hidden relative`}
+              className={`absolute w-44 h-56 md:w-56 md:h-72 rounded-3xl ${social.bgColor} p-6 md:p-8 cursor-pointer flex flex-col items-center justify-center gap-4 md:gap-6 overflow-hidden relative border border-white/20 shadow-[-10px_0px_30px_-10px_rgba(0,0,0,0.5)]`}
               initial={{
                 rotate: rotations[i],
                 x: mobileXOffsets[i],
