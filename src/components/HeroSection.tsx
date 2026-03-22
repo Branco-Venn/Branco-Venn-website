@@ -43,45 +43,50 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
 
       {/* Hero content */}
       <div className="relative z-10 flex h-full items-center">
-        <div className="mx-auto w-full max-w-7xl px-6 md:px-12">
-          <div className="max-w-2xl">
-            {/* Title */}
-            <div className="mb-6 flex flex-col">
-              <motion.h1
-                className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-extrabold leading-[0.85] tracking-tighter"
-                initial={{ x: -100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{
-                  duration: 1,
-                  delay: delay,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
-              >
-                SIM
-              </motion.h1>
-              <motion.h1
-                className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-extrabold leading-[0.85] tracking-tighter"
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{
-                  duration: 1,
-                  delay: delay2,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
-              >
-                GAMEPAD
-              </motion.h1>
-            </div>
+        {/* Atmospheric background glow behind text */}
+        <div className="absolute left-[-10%] top-1/4 w-[600px] h-[600px] bg-foreground/5 rounded-full blur-[120px] pointer-events-none" />
 
-            {/* Subtitle */}
-            <motion.p
-              className="mb-10 text-lg md:text-xl font-light text-muted-foreground tracking-wide"
+        <div className="mx-auto w-full max-w-7xl px-6 md:px-12 relative z-10">
+          {/* Title - Removed max-w-2xl constraint to prevent bg-clip-text clipping on large font sizes */}
+          <div className="mb-6 flex flex-col w-full">
+            <motion.h1
+              className="text-[5.5rem] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-2"
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                duration: 1,
+                delay: delay,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
+              SIM
+            </motion.h1>
+            <motion.h1
+              className="text-[5.5rem] sm:text-7xl md:text-[8rem] lg:text-[10.5rem] font-extrabold leading-[0.85] tracking-tighter bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent pb-4"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                duration: 1,
+                delay: delay2,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+            >
+              GAMEPAD
+            </motion.h1>
+          </div>
+
+          <div className="max-w-2xl">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: delay3 }}
+              className="mb-10 max-w-xl"
             >
-              Turn Your Phone Into a PC Controller
-            </motion.p>
+              <p className="text-lg md:text-xl font-light text-foreground/70 tracking-wide leading-relaxed">
+                Turn your phone into a powerful PC controller. <br className="hidden sm:block" />
+                <span className="font-medium text-foreground/90">Zero latency. Fully customizable.</span>
+              </p>
+            </motion.div>
 
             {/* CTA Buttons */}
             <motion.div
@@ -90,24 +95,23 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: delay4 }}
             >
-              <motion.a
+              <a
                 href="#downloads"
-                className="inline-flex items-center justify-center gap-3 rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+                className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-foreground px-8 py-4 text-lg font-medium text-background transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_-10px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] dark:hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.2)]"
               >
-                <Download size={20} />
-                Download Desktop
-              </motion.a>
-              <motion.a
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="h-1/2 w-1/2 bg-background/20 blur-xl rounded-full"></div>
+                </div>
+                <Download size={20} className="relative z-10" />
+                <span className="relative z-10">Download Desktop</span>
+              </a>
+              <a
                 href="#mobile"
-                className="inline-flex items-center justify-center gap-3 rounded-lg border border-border px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-secondary"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+                className="group relative inline-flex items-center justify-center gap-3 rounded-full border border-foreground/10 bg-foreground/5 backdrop-blur-md px-8 py-4 text-lg font-medium text-foreground transition-all hover:bg-foreground/10 hover:border-foreground/20 active:scale-95"
               >
-                <Smartphone size={20} />
-                Get Mobile App
-              </motion.a>
+                <Smartphone size={20} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                <span>Get Mobile App</span>
+              </a>
             </motion.div>
           </div>
         </div>
