@@ -32,6 +32,11 @@ let lastTime: number | null = null;
 let animationFrameId: number;
 let paused = false;
 
+// Performance optimization: adaptive frame rate
+let targetFPS = 60;
+let frameInterval = 1000 / targetFPS;
+let then = Date.now();
+
 function initParticles() {
     particles = [];
     particleCount = Math.floor((width * height) / 4000);
@@ -66,12 +71,19 @@ function render(timestamp: number) {
         return;
     }
 
-    if (!lastTime) lastTime = timestamp;
-    let dt = timestamp - lastTime;
-    // Prevent massive jumps if tab was hidden (limit max equivalent dropped frames)
-    if (dt > 200) dt = 6.944;
-    const dtMod = dt / 6.944; // Multiplier: 1.0 at 144Hz, ~2.4 at 60Hz
-    lastTime = timestamp;
+    // Performance optimization: adaptive frame rate
+    const now = Date.now();
+    const elapsed = now - then;
+    
+    if (elapsed > frameInterval) {
+        then = now - (elapsed % frameInterval);
+
+        if (!lastTime) lastTime = timestamp;
+        let dt = timestamp - lastTime;
+        // Prevent massive jumps if tab was hidden (limit max equivalent dropped frames)
+        if (dt > 200) dt = 6.944;
+        const dtMod = dt / 6.944; // Multiplier: 1.0 at 144Hz, ~2.4 at 60Hz
+        lastTime = timestamp;
 
     // Keep a tiny bit of trailing for extra fluid smoothness, mostly clear
     ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Solid clear to prevent smearing too much
@@ -168,6 +180,9 @@ function render(timestamp: number) {
     }
 
     animationFrameId = requestAnimationFrame(render);
+    } else {
+        animationFrameId = requestAnimationFrame(render);
+    }
 }
 
 // Listen for messages from the main thread
