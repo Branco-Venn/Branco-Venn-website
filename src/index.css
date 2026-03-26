@@ -130,6 +130,18 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
+/* Performance optimizations - no visual changes */
+canvas {
+  will-change: contents;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Selection color */
 ::selection {
   background: hsl(var(--primary) / 0.2);
