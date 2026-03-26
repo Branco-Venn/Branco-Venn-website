@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
@@ -34,11 +34,24 @@ const Navbar = () => {
     }, 150);
   };
 
+  // Performance optimization: throttled scroll handler
+  const handleScroll = useCallback(() => setScrolled(window.scrollY > 40), []);
+  
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    let ticking = false;
+    const optimizedScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener("scroll", optimizedScroll, { passive: true });
+    return () => window.removeEventListener("scroll", optimizedScroll);
+  }, [handleScroll]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -53,10 +66,10 @@ const Navbar = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 4.0 }}
       >
-        <div className={`mx-auto flex max-w-6xl relative items-center justify-between px-6 py-3 md:px-8 rounded-full border transition-all duration-500 ${
+        <div className={`mx-auto flex max-w-6xl relative items-center justify-between px-6 py-3 md:px-8 rounded-full transition-all duration-500 ${
           scrolled
-            ? "bg-background/70 backdrop-blur-2xl border-white/15 shadow-lg shadow-black/10"
-            : "bg-background/30 backdrop-blur-xl border-white/10 shadow-md shadow-black/5"
+            ? "bg-background/80 backdrop-blur-2xl shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.1),2px_2px_8px_rgba(0,0,0,0.15),-2px_-2px_8px_rgba(255,255,255,0.05)] border border-white/10"
+            : "bg-background/40 backdrop-blur-xl shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.15),4px_4px_12px_rgba(0,0,0,0.1),-4px_-4px_12px_rgba(255,255,255,0.08)] border border-white/20"
         }`}>
           {/* Logo */}
           <Link to="/" className="flex items-center">
@@ -73,7 +86,11 @@ const Navbar = () => {
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
                 >
-                  <button className={`flex outline-none items-center gap-1 text-sm font-light tracking-widest uppercase transition-opacity duration-300 hover:opacity-100 ${location.pathname.startsWith('/product') ? "opacity-100" : "opacity-50"}`}>
+                  <button className={`flex outline-none items-center gap-1 text-sm font-light tracking-widest uppercase transition-all duration-300 hover:scale-105 rounded-full px-3 py-1.5 ${
+                    location.pathname.startsWith('/product') 
+                      ? "bg-foreground/10 opacity-100" 
+                      : "opacity-50 hover:opacity-100"
+                  }`}>
                     {link.label}
                   </button>
                 </div>
@@ -81,9 +98,10 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-sm font-light tracking-widest uppercase transition-opacity duration-300 hover:opacity-100 ${location.pathname === link.path
-                    ? "opacity-100"
-                    : "opacity-50"
+                  className={`text-sm font-light tracking-widest uppercase transition-all duration-300 hover:scale-105 rounded-full px-3 py-1.5 ${
+                    location.pathname === link.path
+                      ? "bg-foreground/10 opacity-100"
+                      : "opacity-50 hover:opacity-100"
                     }`}
                 >
                   {link.label}
@@ -99,7 +117,7 @@ const Navbar = () => {
               <ThemeToggle />
             </div>
             <button
-              className="md:hidden relative z-50"
+              className="md:hidden relative z-50 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1),inset_-2px_-2px_4px_rgba(255,255,255,0.2),2px_2px_6px_rgba(0,0,0,0.15),-2px_-2px_6px_rgba(255,255,255,0.08)] rounded-full p-3 transition-all duration-300 hover:scale-105 active:scale-95"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
             >
@@ -119,7 +137,7 @@ const Navbar = () => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <div className="w-full bg-background/70 backdrop-blur-2xl shadow-2xl rounded-2xl border border-white/10 relative overflow-hidden">
+                <div className="w-full bg-background/80 backdrop-blur-2xl rounded-3xl shadow-[inset_2px_2px_8px_rgba(0,0,0,0.08),inset_-2px_-2px_8px_rgba(255,255,255,0.15),4px_4px_16px_rgba(0,0,0,0.12),-4px_-4px_16px_rgba(255,255,255,0.1)] border border-white/10 relative overflow-hidden">
                   <div className="px-8 py-10 flex flex-row justify-between relative">
                     {/* Left Panel - Header / Description */}
                     <div className="w-[40%] flex flex-col justify-start">
@@ -136,7 +154,7 @@ const Navbar = () => {
                     <div className="w-[50%] grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Link
                         to="/product"
-                        className="group flex flex-row items-center justify-between p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
+                        className="group flex flex-row items-center justify-between p-5 rounded-2xl shadow-[inset_2px_2px_6px_rgba(0,0,0,0.05),inset_-2px_-2px_6px_rgba(255,255,255,0.12),2px_2px_8px_rgba(0,0,0,0.08),-2px_-2px_8px_rgba(255,255,255,0.06)] transition-all duration-300 hover:scale-105 hover:shadow-[inset_1px_1px_4px_rgba(0,0,0,0.08),inset_-1px_-1px_4px_rgba(255,255,255,0.18),3px_3px_12px_rgba(0,0,0,0.12),-3px_-3px_12px_rgba(255,255,255,0.08)]"
                         onClick={() => setProductDropdownOpen(false)}
                       >
                         <div className="flex flex-col flex-1 pr-4">
@@ -152,7 +170,7 @@ const Navbar = () => {
 
                       <Link
                         to="/product/sim-gamepad"
-                        className="group flex flex-row items-center justify-between p-5 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
+                        className="group flex flex-row items-center justify-between p-5 rounded-2xl shadow-[inset_2px_2px_6px_rgba(0,0,0,0.05),inset_-2px_-2px_6px_rgba(255,255,255,0.12),2px_2px_8px_rgba(0,0,0,0.08),-2px_-2px_8px_rgba(255,255,255,0.06)] transition-all duration-300 hover:scale-105 hover:shadow-[inset_1px_1px_4px_rgba(0,0,0,0.08),inset_-1px_-1px_4px_rgba(255,255,255,0.18),3px_3px_12px_rgba(0,0,0,0.12),-3px_-3px_12px_rgba(255,255,255,0.08)]"
                         onClick={() => setProductDropdownOpen(false)}
                       >
                         <div className="flex flex-col flex-1 pr-4">
@@ -179,7 +197,7 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-background"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-background shadow-[inset_4px_4px_12px_rgba(0,0,0,0.1),inset_-4px_-4px_12px_rgba(255,255,255,0.1)]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
