@@ -159,12 +159,12 @@ const SimGamepad = ({ isInitialVisit = false }: SimGamepadProps) => {
                             transition={{ duration: 1.2, delay: baseDelay + 0.3, ease: [0.16, 1, 0.3, 1] }}
                             className="flex-1 relative w-full flex items-center justify-center pt-10 sm:pt-0"
                         >
-                            <div className="absolute inset-[-20%] bg-gradient-to-tr from-primary/30 via-blue-500/10 to-transparent blur-[100px] rounded-full opacity-60 animate-pulse" />
+                            <div className="absolute inset-[-20%] bg-gradient-to-tr from-primary/10 via-blue-500/5 to-transparent blur-[80px] rounded-full opacity-30 animate-pulse" />
                             <motion.img
                                 src={heroImageLogo}
                                 alt="Sim Gamepad Logo"
                                 style={{ y: backdropY }}
-                                className="relative z-10 w-full max-w-[500px] h-auto object-contain drop-shadow-[0_45px_65px_rgba(0,0,0,0.6)] animate-float-slow"
+                                className="relative z-10 w-full max-w-[500px] h-auto object-contain brightness-110 contrast-125 saturate-125 drop-shadow-[0_25px_45px_rgba(0,0,0,0.8)] animate-float-slow"
                             />
                         </motion.div>
                     </section>
