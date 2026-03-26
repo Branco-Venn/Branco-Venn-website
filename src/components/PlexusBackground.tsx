@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useHighPerformanceAnimation } from '@/hooks/useHighPerformanceAnimation';
 
 const COLORS = [
     'rgba(255, 255, 255, 0.8)',
@@ -114,98 +115,99 @@ const PlexusBackground = () => {
             });
         }
 
-        let animationFrameId: number;
-        let paused = false;
+        const { start, stop, pause, resume } = useHighPerformanceAnimation({
+            targetFPS: 144,
+            enableSmoothing: true,
+            onFrame: (deltaTime, smoothedDelta) => {
+                ctx.clearRect(0, 0, w, h);
+                ctx.lineWidth = 0.5;
+
+                // Normalize deltaTime for consistent animation speed
+                const dt = smoothedDelta / 6.944; // Normalize to ~144Hz baseline
+
+                // Update & Draw Lines & Interactivity
+                for (let i = 0; i < particleCount; i++) {
+                    const p = particles[i];
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+
+                    if (p.x < 0 || p.x > w) p.vx *= -1;
+                    if (p.y < 0 || p.y > h) p.vy *= -1;
+
+                    if (mouseX > 0) {
+                        const dx = p.x - mouseX;
+                        const dy = p.y - mouseY;
+                        if (dx*dx + dy*dy < 40000) {
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            p.x -= (dx/dist) * 0.2 * dt;
+                            p.y -= (dy/dist) * 0.2 * dt;
+                        }
+                    }
+
+                    for (let j = i + 1; j < particleCount; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const distSq = dx * dx + dy * dy;
+
+                        if (distSq < connectionDistSq) {
+                            const dist = Math.sqrt(distSq);
+                            const opacity = (1 - dist / 250) * 0.25;
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    if (mouseX > 0) {
+                        const mx = mouseX - p.x;
+                        const my = mouseY - p.y;
+                        const mDistSq = mx*mx + my*my;
+                        if (mDistSq < 40000) {
+                            const mDist = Math.sqrt(mDistSq);
+                            const opacity = (1 - mDist / 200) * 0.3;
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(mouseX, mouseY);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw particle points
+                for (let i = 0; i < particleCount; i++) {
+                    const p = particles[i];
+                    ctx.beginPath();
+                    ctx.fillStyle = p.color;
+                    const renderSize = p.size * (1 + p.z * 0.2);
+                    ctx.arc(p.x, p.y, renderSize, 0, Math.PI * 2);
+                    
+                    if (p.size > 2) {
+                        ctx.shadowBlur = 4;
+                        ctx.shadowColor = 'rgba(255,255,255,0.5)';
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+                }
+                
+                ctx.shadowBlur = 0;
+            }
+        });
 
         const handleVisibility = () => {
-            paused = document.hidden;
-            if (!paused) {
-                animationFrameId = requestAnimationFrame(render);
+            if (document.hidden) {
+                pause();
+            } else {
+                resume();
             }
         };
         document.addEventListener('visibilitychange', handleVisibility);
 
-        const render = () => {
-            if (paused) return;
-
-            ctx.clearRect(0, 0, w, h);
-            ctx.lineWidth = 0.5;
-
-            // Update & Draw Lines & Interactivity
-            for (let i = 0; i < particleCount; i++) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0 || p.x > w) p.vx *= -1;
-                if (p.y < 0 || p.y > h) p.vy *= -1;
-
-                if (mouseX > 0) {
-                    const dx = p.x - mouseX;
-                    const dy = p.y - mouseY;
-                    if (dx*dx + dy*dy < 40000) {
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        p.x -= (dx/dist) * 0.2;
-                        p.y -= (dy/dist) * 0.2;
-                    }
-                }
-
-                for (let j = i + 1; j < particleCount; j++) {
-                    const p2 = particles[j];
-                    const dx = p.x - p2.x;
-                    const dy = p.y - p2.y;
-                    const distSq = dx * dx + dy * dy;
-
-                    if (distSq < connectionDistSq) {
-                        const dist = Math.sqrt(distSq);
-                        const opacity = (1 - dist / 250) * 0.25;
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-                
-                if (mouseX > 0) {
-                    const mx = mouseX - p.x;
-                    const my = mouseY - p.y;
-                    const mDistSq = mx*mx + my*my;
-                    if (mDistSq < 40000) {
-                        const mDist = Math.sqrt(mDistSq);
-                        const opacity = (1 - mDist / 200) * 0.3;
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(mouseX, mouseY);
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            // Draw particle points
-            for (let i = 0; i < particleCount; i++) {
-                const p = particles[i];
-                ctx.beginPath();
-                ctx.fillStyle = p.color;
-                const renderSize = p.size * (1 + p.z * 0.2);
-                ctx.arc(p.x, p.y, renderSize, 0, Math.PI * 2);
-                
-                if (p.size > 2) {
-                    ctx.shadowBlur = 4;
-                    ctx.shadowColor = 'rgba(255,255,255,0.5)';
-                } else {
-                    ctx.shadowBlur = 0;
-                }
-                ctx.fill();
-            }
-            
-            ctx.shadowBlur = 0;
-
-            animationFrameId = requestAnimationFrame(render);
-        };
-
-        animationFrameId = requestAnimationFrame(render);
+        start();
 
         const handleResize = () => {
             w = window.innerWidth;
@@ -221,7 +223,7 @@ const PlexusBackground = () => {
             document.body.removeEventListener('mouseleave', handleMouseLeave);
             window.removeEventListener('resize', handleResize);
             document.removeEventListener('visibilitychange', handleVisibility);
-            cancelAnimationFrame(animationFrameId);
+            stop();
         };
     }, []);
 
