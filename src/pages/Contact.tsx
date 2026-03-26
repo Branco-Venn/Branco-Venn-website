@@ -110,16 +110,44 @@ const Contact = () => {
 
     setSending(true);
 
-    // Simulate sending (replace with real API endpoint)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim()
+        })
+      });
 
-    toast({
-      title: "Message Sent Successfully",
-      description: "Our team will reach out to you within 24 hours.",
-    });
+      const data = await response.json();
 
-    setForm({ name: "", email: "", message: "" });
-    setSending(false);
+      if (data.success) {
+        toast({
+          title: "Message Sent Successfully",
+          description: data.message || "Our team will reach out to you within 24 hours.",
+        });
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
