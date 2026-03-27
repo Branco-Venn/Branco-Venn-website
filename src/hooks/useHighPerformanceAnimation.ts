@@ -7,7 +7,7 @@ interface UseHighPerformanceAnimationOptions {
 }
 
 export const useHighPerformanceAnimation = ({
-  targetFPS = 144,
+  targetFPS = 120,
   enableSmoothing = true,
   onFrame
 }: UseHighPerformanceAnimationOptions = {}) => {
