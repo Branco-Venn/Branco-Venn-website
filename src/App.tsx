@@ -14,6 +14,7 @@ import Product from "./pages/Product";
 import SimGamepad from "./pages/SimGamepad";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => {
               <Route path="/product/sim-gamepad" element={<SimGamepad isInitialVisit={showIntro} />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
