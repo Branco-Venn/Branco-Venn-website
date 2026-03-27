@@ -11,8 +11,8 @@ const navLinks = [
   { label: "Home", path: "/" },
   { label: "Product", path: "/product" },
   { label: "About", path: "/about" },
-  { label: "Contact", path: "/contact" },
   { label: "Privacy", path: "/privacy" },
+  { label: "Contact", path: "/contact" },
 ];
 
 const Navbar = () => {
@@ -35,7 +35,7 @@ const Navbar = () => {
     }, 150);
   };
 
-  // Performance optimization: throttled scroll handler
+  // Performance optimization: throttled scroll handler for 120Hz
   const handleScroll = useCallback(() => setScrolled(window.scrollY > 40), []);
   
   useEffect(() => {
