@@ -5,11 +5,13 @@ interface OptimizedSectionProps {
   children: ReactNode;
   delay?: number;
   className?: string;
+  id?: string;
 }
 
-const OptimizedSection = memo(({ children, delay = 0, className = "" }: OptimizedSectionProps) => {
+const OptimizedSection = memo(({ children, delay = 0, className = "", id }: OptimizedSectionProps) => {
   return (
     <motion.section
+      id={id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
