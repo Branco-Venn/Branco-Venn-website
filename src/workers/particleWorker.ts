@@ -32,8 +32,8 @@ let lastTime: number | null = null;
 let animationFrameId: number;
 let paused = false;
 
-// Performance optimization: adaptive frame rate
-let targetFPS = 60;
+// Performance optimization: adaptive frame rate for 120Hz displays
+let targetFPS = 120;
 let frameInterval = 1000 / targetFPS;
 let then = Date.now();
 
@@ -81,8 +81,8 @@ function render(timestamp: number) {
         if (!lastTime) lastTime = timestamp;
         let dt = timestamp - lastTime;
         // Prevent massive jumps if tab was hidden (limit max equivalent dropped frames)
-        if (dt > 200) dt = 6.944;
-        const dtMod = dt / 6.944; // Multiplier: 1.0 at 144Hz, ~2.4 at 60Hz
+        if (dt > 200) dt = 8.333; // Optimized for 120Hz (120fps = 8.333ms per frame)
+        const dtMod = dt / 8.333; // Multiplier: 1.0 at 120Hz, ~2.4 at 50Hz
         lastTime = timestamp;
 
     // Keep a tiny bit of trailing for extra fluid smoothness, mostly clear
