@@ -31,7 +31,7 @@ const IntroAnimation = ({ onComplete }: IntroAnimationProps) => {
       setTypingStarted(true);
     }, 700);
 
-    const typingDurationMs = TYPING_TEXT.length * 60;
+    const typingDurationMs = TYPING_TEXT.length * 50; // Reduced from 60ms for smoother 120Hz
     const holdDuration = 1400;
     const startExit = setTimeout(() => {
       setExiting(true);
@@ -112,7 +112,7 @@ const IntroAnimation = ({ onComplete }: IntroAnimationProps) => {
                 }
                 transition={{
                   width: {
-                    duration: TYPING_TEXT.length * 0.06,
+                    duration: TYPING_TEXT.length * 0.05, // Reduced from 0.06 for 120Hz
                     delay: 0,
                     ease: "easeInOut",
                   },
