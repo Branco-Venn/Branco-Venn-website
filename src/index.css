@@ -130,11 +130,26 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Performance optimizations - no visual changes */
+/* Performance optimizations for 120Hz displays */
 canvas {
   will-change: contents;
   transform: translateZ(0);
   backface-visibility: hidden;
+  image-rendering: optimizeSpeed;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Optimize animations for high refresh rates */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Hardware acceleration for smooth animations */
+.smooth-transform {
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Smooth scrolling */
