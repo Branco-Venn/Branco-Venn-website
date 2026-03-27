@@ -160,8 +160,8 @@ const ParticleBackground = () => {
             if (paused) return;
             if (!lastTime) lastTime = timestamp;
             let dt = timestamp - lastTime;
-            if (dt > 200) dt = 6.944;
-            const dtMod = dt / 6.944;
+            if (dt > 200) dt = 8.333; // Optimized for 120Hz displays
+            const dtMod = dt / 8.333; // Multiplier: 1.0 at 120Hz, ~2.4 at 50Hz
             lastTime = timestamp;
 
             ctx.fillStyle = 'rgba(0, 0, 0, 1)';
