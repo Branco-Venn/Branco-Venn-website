@@ -1,85 +1,27 @@
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useEffect, useState, useRef } from "react";
 
-// Platform logo SVGs - Latest official designs
-const WindowsLogo = ({ className }: { className?: string }) => {
-  const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [logoSvg, setLogoSvg] = useState<string>("");
-  const containerRef = useRef<HTMLDivElement>(null);
+const ThemedLogoImage = ({
+  alt,
+  src,
+  className,
+}: {
+  alt: string;
+  src: string;
+  className?: string;
+}) => (
+  <img
+    src={src}
+    alt={alt}
+    className={`${className} object-contain dark:invert`}
+    loading="lazy"
+    decoding="async"
+  />
+);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const loadSvg = async () => {
-      try {
-        const response = await fetch("/windows-logo.svg");
-        const svgText = await response.text();
-        setLogoSvg(svgText);
-      } catch (error) {
-        console.error("Failed to load Windows logo:", error);
-      }
-    };
-
-    if (mounted) {
-      loadSvg();
-    }
-  }, [mounted]);
-
-  useEffect(() => {
-    if (!mounted || !logoSvg || !containerRef.current) return;
-
-    const currentTheme = resolvedTheme || theme || "dark";
-    const fillColor = currentTheme === "dark" ? "#ffffff" : "#000000";
-
-    const parser = new DOMParser();
-    const svgDoc = parser.parseFromString(logoSvg, "image/svg+xml");
-    const svgElement = svgDoc.documentElement;
-
-    // Update all path elements to use the theme color
-    const paths = svgElement.querySelectorAll("path");
-    paths.forEach((path) => {
-      path.setAttribute("fill", fillColor);
-    });
-
-    // Set SVG size and ensure proper viewBox
-    svgElement.setAttribute("width", "48");
-    svgElement.setAttribute("height", "48");
-    svgElement.setAttribute("viewBox", "0 0 88 88");
-    svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svgElement.style.width = "100%";
-    svgElement.style.height = "100%";
-
-    const serializer = new XMLSerializer();
-    const updatedSvg = serializer.serializeToString(svgElement);
-
-    if (containerRef.current) {
-      containerRef.current.innerHTML = updatedSvg;
-    }
-  }, [theme, resolvedTheme, mounted, logoSvg]);
-
-  if (!mounted) {
-    return (
-      <div
-        className={className}
-        aria-label="Windows Logo"
-      />
-    );
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className={`${className} flex items-center justify-center`}
-      style={{ width: '48px', height: '48px' }}
-      aria-label="Windows Logo"
-    />
-  );
-};
+const WindowsLogo = ({ className }: { className?: string }) => (
+  <ThemedLogoImage alt="Windows Logo" src="/windows-logo.svg" className={className} />
+);
 
 const MacOSLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -87,93 +29,9 @@ const MacOSLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const LinuxLogo = ({ className }: { className?: string }) => {
-  const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [logoSvg, setLogoSvg] = useState<string>("");
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const loadSvg = async () => {
-      try {
-        const response = await fetch("/linux-logo.svg");
-        const svgText = await response.text();
-        setLogoSvg(svgText);
-      } catch (error) {
-        console.error("Failed to load Linux logo:", error);
-      }
-    };
-
-    if (mounted) {
-      loadSvg();
-    }
-  }, [mounted]);
-
-  useEffect(() => {
-    if (!mounted || !logoSvg || !containerRef.current) return;
-
-    const currentTheme = resolvedTheme || theme || "dark";
-    const fillColor = currentTheme === "dark" ? "#ffffff" : "#000000";
-
-    const parser = new DOMParser();
-    const svgDoc = parser.parseFromString(logoSvg, "image/svg+xml");
-    const svgElement = svgDoc.documentElement;
-
-    // Update all path and shape elements to use the theme color
-    const updateFills = (element: Element) => {
-      if (element.hasAttribute("fill") && element.getAttribute("fill") !== "none") {
-        const currentFill = element.getAttribute("fill");
-        // Only update if it's a color (not gradients, patterns, etc.)
-        if (currentFill && currentFill !== "none" && !currentFill.startsWith("url(")) {
-          element.setAttribute("fill", fillColor);
-        }
-      }
-      Array.from(element.children).forEach(updateFills);
-    };
-
-    updateFills(svgElement);
-
-    // Set SVG size and ensure proper viewBox
-    if (!svgElement.hasAttribute("viewBox")) {
-      svgElement.setAttribute("viewBox", "0 0 512 512");
-    }
-    svgElement.setAttribute("width", "48");
-    svgElement.setAttribute("height", "48");
-    svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svgElement.style.width = "100%";
-    svgElement.style.height = "100%";
-
-    const serializer = new XMLSerializer();
-    const updatedSvg = serializer.serializeToString(svgElement);
-
-    if (containerRef.current) {
-      containerRef.current.innerHTML = updatedSvg;
-    }
-  }, [theme, resolvedTheme, mounted, logoSvg]);
-
-  if (!mounted) {
-    return (
-      <div
-        className={`${className} flex items-center justify-center`}
-        style={{ width: '48px', height: '48px' }}
-        aria-label="Linux Logo"
-      />
-    );
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className={`${className} flex items-center justify-center`}
-      style={{ width: '48px', height: '48px' }}
-      aria-label="Linux Logo"
-    />
-  );
-};
+const LinuxLogo = ({ className }: { className?: string }) => (
+  <ThemedLogoImage alt="Linux Logo" src="/linux-logo.svg" className={className} />
+);
 
 const platforms = [
   {
