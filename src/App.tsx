@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,13 +9,13 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import IntroAnimation from "@/components/IntroAnimation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Index from "./pages/Index";
-import Product from "./pages/Product";
-import SimGamepad from "./pages/SimGamepad";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Privacy from "./pages/Privacy";
-import NotFound from "./pages/NotFound";
+const Index = lazy(() => import("./pages/Index"));
+const Product = lazy(() => import("./pages/Product"));
+const SimGamepad = lazy(() => import("./pages/SimGamepad"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -45,16 +45,18 @@ const App = () => {
               )}
             </AnimatePresence>
             <Navbar />
-            <Routes>
-              {/* Pass whether the intro is currently showing down so HeroSection can delay its animation perfectly */}
-              <Route path="/" element={<Index isInitialVisit={showIntro} />} />
-              <Route path="/product" element={<Product />} />
-              <Route path="/product/sim-gamepad" element={<SimGamepad isInitialVisit={showIntro} />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={null}>
+              <Routes>
+                {/* Pass whether the intro is currently showing down so HeroSection can delay its animation perfectly */}
+                <Route path="/" element={<Index isInitialVisit={showIntro} />} />
+                <Route path="/product" element={<Product />} />
+                <Route path="/product/sim-gamepad" element={<SimGamepad isInitialVisit={showIntro} />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
             <Footer />
           </BrowserRouter>
         </TooltipProvider>
