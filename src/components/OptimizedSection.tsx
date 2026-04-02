@@ -19,7 +19,11 @@ const OptimizedSection = memo(({ children, delay = 0, className = "", id }: Opti
         delay: delay * 0.1, 
         ease: [0.25, 0.1, 0.25, 1] 
       }}
-      className={`smooth-transform ${className}`}
+      className={className}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "1000px",
+      }}
     >
       {children}
     </motion.section>
