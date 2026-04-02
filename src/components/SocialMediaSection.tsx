@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const socials = [
   {
@@ -73,12 +74,94 @@ const socials = [
 ];
 
 const rotations = [-8, -4, 0, 4, 8];
-// Halved the offsets so they stack closer together
 const xOffsets = [-10, -5, 0, 5, 10];
 const mobileXOffsets = [-8, -4, 0, 4, 8];
 
+interface SocialCardProps {
+  social: (typeof socials)[number];
+  index: number;
+  hoveredIndex: number | null;
+  baseOffset: number;
+  hoveredOffset: number;
+  onHoverStart: (index: number) => void;
+  onHoverEnd: () => void;
+}
+
+const SocialCard = memo(({
+  social,
+  index,
+  hoveredIndex,
+  baseOffset,
+  hoveredOffset,
+  onHoverStart,
+  onHoverEnd,
+}: SocialCardProps) => {
+  const isHovered = hoveredIndex === index;
+  const hasHoveredCard = hoveredIndex !== null;
+  const x = hasHoveredCard && !isHovered
+    ? (index < hoveredIndex ? baseOffset - hoveredOffset : baseOffset + hoveredOffset)
+    : baseOffset;
+
+  return (
+    <motion.a
+      href={social.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`absolute w-44 h-56 md:w-56 md:h-72 rounded-3xl ${social.bgColor} p-6 md:p-8 cursor-pointer flex flex-col items-center justify-center gap-4 md:gap-6 overflow-hidden relative border border-white/20 shadow-[-10px_0px_30px_-10px_rgba(0,0,0,0.5)]`}
+      initial={{
+        rotate: rotations[index],
+        x: baseOffset,
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      viewport={{ once: true }}
+      animate={{
+        rotate: isHovered ? 0 : rotations[index],
+        scale: isHovered ? 1.15 : 1,
+        x,
+      }}
+      transition={{
+        duration: hasHoveredCard ? 0.4 : 0.7,
+        delay: hasHoveredCard ? 0 : index * 0.1,
+        ease: hasHoveredCard ? "easeOut" : [0.25, 0.1, 0.25, 1],
+      }}
+      style={{
+        zIndex: isHovered ? 50 : (index === 2 ? 5 : (socials.length - Math.abs(2 - index))),
+        boxShadow: isHovered ? "0 25px 60px -15px rgba(0,0,0,0.5)" : "-10px 0px 20px -5px rgba(0,0,0,0.4)",
+      }}
+      onHoverStart={() => onHoverStart(index)}
+      onHoverEnd={onHoverEnd}
+    >
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4 md:gap-6">
+        {social.icon && (
+          <div className="text-white">
+            {social.icon}
+          </div>
+        )}
+        <div className="text-center">
+          <h3 className="text-lg md:text-xl font-semibold mb-1 text-white drop-shadow-lg">
+            {social.name}
+          </h3>
+          <p className="text-xs md:text-sm text-white/90 drop-shadow-md">
+            {social.handle}
+          </p>
+        </div>
+      </div>
+    </motion.a>
+  );
+});
+
+SocialCard.displayName = "SocialCard";
+
 const SocialMediaSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const isMobile = useIsMobile();
+  const offsets = useMemo(() => (isMobile ? mobileXOffsets : xOffsets), [isMobile]);
+  const hoveredOffset = isMobile ? 15 : 25;
 
   return (
     <section className="relative py-32 md:py-40 overflow-hidden">
@@ -101,65 +184,16 @@ const SocialMediaSection = () => {
         {/* Fan-style cards */}
         <div className="relative flex items-center justify-center h-[320px] md:h-[420px]">
           {socials.map((social, i) => (
-            <motion.a
+            <SocialCard
               key={social.name}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`absolute w-44 h-56 md:w-56 md:h-72 rounded-3xl ${social.bgColor} p-6 md:p-8 cursor-pointer flex flex-col items-center justify-center gap-4 md:gap-6 overflow-hidden relative border border-white/20 shadow-[-10px_0px_30px_-10px_rgba(0,0,0,0.5)]`}
-              initial={{
-                rotate: rotations[i],
-                x: mobileXOffsets[i],
-                opacity: 0,
-                y: 40,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{ once: true }}
-              animate={{
-                rotate: hoveredIndex === i ? 0 : rotations[i],
-                scale: hoveredIndex === i ? 1.15 : 1,
-                x: hoveredIndex !== null && hoveredIndex !== i
-                  ? (typeof window !== "undefined" && window.innerWidth > 768
-                    ? (i < hoveredIndex ? xOffsets[i] - 25 : xOffsets[i] + 25)
-                    : (i < hoveredIndex ? mobileXOffsets[i] - 15 : mobileXOffsets[i] + 15))
-                  : (typeof window !== "undefined" && window.innerWidth > 768 ? xOffsets[i] : mobileXOffsets[i]),
-              }}
-              transition={{
-                duration: hoveredIndex !== null ? 0.4 : 0.7,
-                delay: hoveredIndex !== null ? 0 : i * 0.1,
-                ease: hoveredIndex !== null ? "easeOut" : [0.25, 0.1, 0.25, 1],
-              }}
-              style={{
-                ...(social.bgImage ? {
-                  backgroundImage: `url(${social.bgImage})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                } : {}),
-                zIndex: hoveredIndex === i ? 50 : (i === 2 ? 5 : (socials.length - Math.abs(2 - i))),
-                boxShadow: hoveredIndex === i ? "0 25px 60px -15px rgba(0,0,0,0.5)" : "-10px 0px 20px -5px rgba(0,0,0,0.4)",
-              }}
-              onHoverStart={() => setHoveredIndex(i)}
+              social={social}
+              index={i}
+              hoveredIndex={hoveredIndex}
+              baseOffset={offsets[i]}
+              hoveredOffset={hoveredOffset}
+              onHoverStart={setHoveredIndex}
               onHoverEnd={() => setHoveredIndex(null)}
-            >
-              <div className="relative z-10 flex flex-col items-center justify-center gap-4 md:gap-6">
-                {social.icon && (
-                  <div className="text-white">
-                    {social.icon}
-                  </div>
-                )}
-                <div className="text-center">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1 text-white drop-shadow-lg">
-                    {social.name}
-                  </h3>
-                  <p className="text-xs md:text-sm text-white/90 drop-shadow-md">
-                    {social.handle}
-                  </p>
-                </div>
-              </div>
-            </motion.a>
+            />
           ))}
         </div>
       </div>
