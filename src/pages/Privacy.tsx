@@ -1,20 +1,35 @@
 import { motion } from "framer-motion";
 import { Shield, Mail, Database, Lock, ArrowRight, User, Clock, AlertCircle, CheckCircle, ExternalLink, Globe, RefreshCw, Info } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import OptimizedSection from "@/components/OptimizedSection";
 import PrivacyContent from "@/components/PrivacyContent";
 import DataDeletionContent from "@/components/DataDeletionContent";
 
+const GlassPanel = memo(({ children }: { children: ReactNode }) => (
+  <div className="relative isolate overflow-hidden rounded-3xl border border-white/10 shadow-[inset_2px_2px_8px_rgba(0,0,0,0.05),inset_-2px_-2px_8px_rgba(255,255,255,0.1),4px_4px_16px_rgba(0,0,0,0.08),-4px_-4px_16px_rgba(255,255,255,0.05)]">
+    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm pointer-events-none" />
+    <div className="relative z-10 p-8 md:p-12">
+      {children}
+    </div>
+  </div>
+));
+
+GlassPanel.displayName = "GlassPanel";
+
 const Privacy = () => {
   const memoizedSections = useMemo(() => ({
     main: (
-      <OptimizedSection delay={1} className="bg-background/50 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-[inset_2px_2px_8px_rgba(0,0,0,0.05),inset_-2px_-2px_8px_rgba(255,255,255,0.1),4px_4px_16px_rgba(0,0,0,0.08),-4px_-4px_16px_rgba(255,255,255,0.05)] border border-white/10">
-        <PrivacyContent />
+      <OptimizedSection delay={1}>
+        <GlassPanel>
+          <PrivacyContent />
+        </GlassPanel>
       </OptimizedSection>
     ),
     deletion: (
-      <OptimizedSection delay={2} id="data-deletion" className="bg-background/50 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-[inset_2px_2px_8px_rgba(0,0,0,0.05),inset_-2px_-2px_8px_rgba(255,255,255,0.1),4px_4px_16px_rgba(0,0,0,0.08),-4px_-4px_16px_rgba(255,255,255,0.05)] border border-white/10">
-        <DataDeletionContent />
+      <OptimizedSection delay={2} id="data-deletion">
+        <GlassPanel>
+          <DataDeletionContent />
+        </GlassPanel>
       </OptimizedSection>
     )
   }), []);
