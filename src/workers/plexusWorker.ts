@@ -27,6 +27,10 @@ let animationFrameId: number;
 let paused = false;
 let mouseX = -1000;
 let mouseY = -1000;
+const maxDist = 250;
+const maxDistSq = maxDist * maxDist;
+const mouseDist = 200;
+const mouseDistSq = mouseDist * mouseDist;
 
 function initParticles() {
     particles = [];
@@ -71,8 +75,9 @@ function render() {
         if (mouseX > 0) {
             const dx = p.x - mouseX;
             const dy = p.y - mouseY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 200) {
+            const distSq = dx * dx + dy * dy;
+            if (distSq < mouseDistSq) {
+                const dist = Math.sqrt(distSq) || 1;
                 p.x -= (dx / dist) * 0.2; // slight parallax pull
                 p.y -= (dy / dist) * 0.2;
             }
@@ -83,12 +88,10 @@ function render() {
             const p2 = particles[j];
             const dx = p.x - p2.x;
             const dy = p.y - p2.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const distSq = dx * dx + dy * dy;
 
-            // Much larger connection distance to allow geometric shapes
-            const maxDist = 250; 
-            
-            if (dist < maxDist) {
+            if (distSq < maxDistSq) {
+                const dist = Math.sqrt(distSq);
                 // Opacity fades out gently
                 const opacity = (1 - dist / maxDist) * 0.25;
                 ctx.beginPath();
@@ -103,8 +106,9 @@ function render() {
         if (mouseX > 0) {
             const mx = mouseX - p.x;
             const my = mouseY - p.y;
-            const mDist = Math.sqrt(mx * mx + my * my);
-            if (mDist < 200) {
+            const mDistSq = mx * mx + my * my;
+            if (mDistSq < mouseDistSq) {
+                const mDist = Math.sqrt(mDistSq);
                 const opacity = (1 - mDist / 200) * 0.3;
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
