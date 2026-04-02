@@ -35,6 +35,9 @@ const PlexusBackground = () => {
                 new URL('../workers/plexusWorker.ts', import.meta.url),
                 { type: 'module' }
             );
+            let queuedMouseMove = false;
+            let nextMouseX = -1000;
+            let nextMouseY = -1000;
 
             worker.postMessage(
                 { type: 'init', canvas: offscreen, width, height },
@@ -42,7 +45,15 @@ const PlexusBackground = () => {
             );
 
             const handleMouseMove = (e: MouseEvent) => {
-                worker.postMessage({ type: 'mousemove', x: e.clientX, y: e.clientY });
+                nextMouseX = e.clientX;
+                nextMouseY = e.clientY;
+                if (queuedMouseMove) return;
+
+                queuedMouseMove = true;
+                requestAnimationFrame(() => {
+                    queuedMouseMove = false;
+                    worker.postMessage({ type: 'mousemove', x: nextMouseX, y: nextMouseY });
+                });
             };
             const handleMouseLeave = () => {
                 worker.postMessage({ type: 'mouseleave' });
@@ -87,6 +98,7 @@ const PlexusBackground = () => {
         const particles: Particle[] = [];
         const particleCount = Math.floor((w * h) / 30000) + 15;
         const connectionDistSq = 250 * 250;
+        const mouseDistSq = 200 * 200;
 
         let mouseX = -1000;
         let mouseY = -1000;
@@ -116,16 +128,14 @@ const PlexusBackground = () => {
         }
 
         const { start, stop, pause, resume } = useHighPerformanceAnimation({
-            targetFPS: 144,
+            targetFPS: 60,
             enableSmoothing: true,
-            onFrame: (deltaTime, smoothedDelta) => {
+            onFrame: (_deltaTime, smoothedDelta) => {
                 ctx.clearRect(0, 0, w, h);
                 ctx.lineWidth = 0.5;
 
-                // Normalize deltaTime for consistent animation speed
-                const dt = smoothedDelta / 6.944; // Normalize to ~144Hz baseline
+                const dt = smoothedDelta / 16.667;
 
-                // Update & Draw Lines & Interactivity
                 for (let i = 0; i < particleCount; i++) {
                     const p = particles[i];
                     p.x += p.vx * dt;
@@ -137,10 +147,11 @@ const PlexusBackground = () => {
                     if (mouseX > 0) {
                         const dx = p.x - mouseX;
                         const dy = p.y - mouseY;
-                        if (dx*dx + dy*dy < 40000) {
-                            const dist = Math.sqrt(dx*dx + dy*dy);
-                            p.x -= (dx/dist) * 0.2 * dt;
-                            p.y -= (dy/dist) * 0.2 * dt;
+                        const distSq = dx * dx + dy * dy;
+                        if (distSq < mouseDistSq) {
+                            const dist = Math.sqrt(distSq) || 1;
+                            p.x -= (dx / dist) * 0.2 * dt;
+                            p.y -= (dy / dist) * 0.2 * dt;
                         }
                     }
 
@@ -164,8 +175,8 @@ const PlexusBackground = () => {
                     if (mouseX > 0) {
                         const mx = mouseX - p.x;
                         const my = mouseY - p.y;
-                        const mDistSq = mx*mx + my*my;
-                        if (mDistSq < 40000) {
+                        const mDistSq = mx * mx + my * my;
+                        if (mDistSq < mouseDistSq) {
                             const mDist = Math.sqrt(mDistSq);
                             const opacity = (1 - mDist / 200) * 0.3;
                             ctx.beginPath();
