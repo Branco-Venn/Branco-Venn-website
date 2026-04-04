@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
+import linuxLogo from "@/assets/linux-svgrepo-com.svg";
 
 const ThemedLogoImage = ({
   alt,
@@ -30,7 +31,7 @@ const MacOSLogo = ({ className }: { className?: string }) => (
 );
 
 const LinuxLogo = ({ className }: { className?: string }) => (
-  <ThemedLogoImage alt="Linux Logo" src="/linux-logo.svg" className={`${className} grayscale`} />
+  <ThemedLogoImage alt="Linux Logo" src={linuxLogo} className={className} />
 );
 
 const platforms = [
@@ -111,7 +112,7 @@ const DownloadSection = () => {
                 key={platform.name}
                 href={platform.href}
                 download={platform.download ? true : undefined}
-                className="group relative flex flex-col items-center gap-6 rounded-3xl border border-foreground/10 bg-foreground/5 backdrop-blur-lg p-10 transition-all duration-500 hover:bg-foreground/10 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] hover:border-foreground/20 overflow-hidden"
+                className="group relative flex flex-col items-center gap-6 rounded-3xl border border-foreground/10 bg-foreground/5 backdrop-blur-lg p-10 overflow-hidden transform-gpu transition-all duration-500 ease-out hover:bg-foreground/10 hover:-translate-y-4 hover:scale-[1.03] hover:shadow-[0_30px_60px_-18px_rgba(0,0,0,0.45)] hover:border-foreground/20"
                 variants={cardVariants}
               >
                 {/* Subtle internal gradient glow on hover */}
