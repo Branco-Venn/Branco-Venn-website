@@ -30,7 +30,7 @@ const MacOSLogo = ({ className }: { className?: string }) => (
 );
 
 const LinuxLogo = ({ className }: { className?: string }) => (
-  <ThemedLogoImage alt="Linux Logo" src="/linux-logo.svg" className={className} />
+  <ThemedLogoImage alt="Linux Logo" src="/linux-logo.svg" className={`${className} grayscale`} />
 );
 
 const platforms = [
