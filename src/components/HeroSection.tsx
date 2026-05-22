@@ -83,10 +83,15 @@ const HeroSection = ({ isInitialVisit = false }: HeroSectionProps) => {
               transition={{ duration: 0.8, delay: delay3 }}
               className="mb-10 max-w-xl"
             >
-              <p className="text-lg md:text-xl font-light text-foreground/70 tracking-wide leading-relaxed">
+              <p className="text-lg md:text-xl font-light text-foreground/70 tracking-wide leading-relaxed mb-4">
                 Turn your phone into a powerful PC controller. <br className="hidden sm:block" />
                 <span className="font-medium text-foreground/90">Zero latency. Fully customizable.</span>
               </p>
+              
+              <div className="mt-6 border-l-2 border-primary/30 pl-4 py-1 text-sm text-foreground/60 leading-relaxed font-light">
+                <span className="font-semibold text-foreground/90 block mb-1">About Sim Gamepad</span>
+                Sim Gamepad is a low-latency mobile-to-PC controller platform that lets users turn their smartphone into a customizable gaming controller for desktop games.
+              </div>
             </motion.div>
 
             {/* CTA Buttons */}
